@@ -135,6 +135,22 @@ void *receiver_thread(void *arg) {
         }
     }
 
+    // --- 资源释放 ---
+    for (int i = 0; i < line_count; i++) {
+        // 解除 Data SHM的映射
+        if (data_slots[i] != MAP_FAILED) {
+            munmap(data_slots[i], sizeof(struct shm_data_slot));
+        }
+
+        if (msg_slots[i] != MAP_FAILED) {
+            munmap(msg_slots[i], sizeof(struct shm_msg_slot));
+        }
+        
+        // 关闭对应的Eventfd
+        close(100 + i);
+        close(200 + i);
+    }
+
     printf("Receiver thread exiting...\n");
     close(epfd);
 
